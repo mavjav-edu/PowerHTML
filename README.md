@@ -1,5 +1,5 @@
 # PowerHTML
-[![Build status](https://ci.appveyor.com/api/projects/status/9l6029e9g7f5687i?svg=true)](https://ci.appveyor.com/project/mavaddat/powerhtml)
+[![Build status](https://ci.appveyor.com/api/projects/status/j00u93rdhkt4dgi9?svg=true)](https://ci.appveyor.com/project/mavjav-edu/powerhtml)
 
 HTML Agility Pack implementation in PowerShell for parsing and manipulating HTML
 
