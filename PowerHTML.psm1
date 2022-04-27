@@ -10,19 +10,19 @@ $ModuleSettings = @( Get-ChildItem -Path $PSScriptRoot\Settings\*.json -ErrorAct
 try {
     Add-Type -AssemblyName 'netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' -ErrorAction Stop
     #If netstandard is not available it won't get this far
-    $dotNetTarget = "netstandard2"
+    $dotNetTarget = "netstandard2.0"
 } catch {
-    $dotNetTarget = "net40-client"
+    $dotNetTarget = "Net40-client"
 }
 
-$AssembliesToLoad = Get-ChildItem -Path "$PSScriptRoot\lib\*-$dotNetTarget.dll"
+$AssembliesToLoad = Get-ChildItem -Path "$PSScriptRoot\lib\$dotNetTarget\*.dll" -ErrorAction SilentlyContinue
 if ($AssembliesToLoad) {
     #If we are in a build or a pester test, load assemblies from a temporary file so they don't lock the original file
     #This helps to prevent cleaning problems due to a powershell session locking the file because unloading a module doesn't unload assemblies
     if ($BuildTask -or $TestDrive) {
-        write-verbose "Detected Invoke-Build or Pester, loading assemblies from a temp location to avoid locking issues"
+        Write-Verbose "Detected Invoke-Build or Pester, loading assemblies from a temp location to avoid locking issues"
         if ($Global:BuildAssembliesLoadedPreviously) {
-            write-warning "You are in a build or test environment. We detected that module assemblies were loaded in this same session on a previous build or test. Strongly recommend you kill the process and start a new session for a clean build/test!"
+            Write-Warning "You are in a build or test environment. We detected that module assemblies were loaded in this same session on a previous build or test. Strongly recommend you kill the process and start a new session for a clean build/test!"
         }
 
         $TempAssembliesToLoad = @()
@@ -35,8 +35,10 @@ if ($AssembliesToLoad) {
         $Global:BuildAssembliesLoadedPreviously = $true
     }
 
-    write-verbose "Loading Assemblies for .NET target: $dotNetTarget"
+    Write-Verbose "Loading Assemblies for .NET target: $dotNetTarget"
     Add-Type -Path $AssembliesToLoad.fullname -ErrorAction Stop
+} else {
+    Write-Error "No assemblies found for .NET target: $dotNetTarget"
 }
 
 #Dot source the files
@@ -55,7 +57,7 @@ Foreach($FunctionToImport in @($PublicFunctions + $PrivateFunctions))
 #Import Settings files as global objects based on their filename
 foreach ($ModuleSettingsItem in $ModuleSettings)
 {
-    New-Variable -Name "$($ModuleSettingsItem.basename)" -Scope Global -Value (convertfrom-json (Get-Content -raw $ModuleSettingsItem.fullname)) -Force
+    New-Variable -Name "$($ModuleSettingsItem.basename)" -Scope Global -Value (ConvertFrom-Json (Get-Content -raw $ModuleSettingsItem.fullname)) -Force
 }
 
 #Export the public functions. This requires them to match the standard Noun-Verb powershell cmdlet format as a safety mechanism

@@ -86,12 +86,12 @@ function ConvertFrom-Html {
                 break
             }
         }
-        if (-not $inputObject) {write-error "Input Object Type Not Identified. If you see this then ConvertFrom-HTML needs better input validation"}
+        if (-not $inputObject) {Write-Error "Input Object Type Not Identified. If you see this then ConvertFrom-HTML needs better input validation"}
 
         #Unwrap any arrays. This allows us to accept both pipeline and parameter input
         $inputObject | ForEach-Object {
             $inputItem = $PSItem
-            $htmlDoc = new-object HtmlAgilityPack.HtmlDocument
+            $htmlDoc = New-Object HtmlAgilityPack.HtmlDocument
 
             #Process all object types into a common HTML document format
             switch ($inputItem.GetType().FullName) {
@@ -99,13 +99,13 @@ function ConvertFrom-Html {
                     $htmlDoc.LoadHtml($inputItem)
                 }
                 "System.Uri" {
-                    $htmlDoc = (new-object HtmlAgilityPack.HtmlWeb).Load($inputItem)
+                    $htmlDoc = (New-Object HtmlAgilityPack.HtmlWeb).Load($inputItem)
                 }
                 "System.IO.FileInfo" {
                     $htmlDoc.Load($inputItem)
                 }
                 Default {
-                    write-error "Object Type not supported or implemented. If you see this error then ConvertFrom-HTML has improper input validation"
+                    Write-Error "Object Type not supported or implemented. If you see this error then ConvertFrom-HTML has improper input validation"
                     continue
                 }
             }

@@ -1,13 +1,12 @@
-# See http://www.appveyor.com/docs/appveyor-yml for many more options
+# See Http://Www.Appveyor.Com/Docs/Appveyor-Yml for many more options
 version: '{build}-{branch}'
 
 #Publish to PowerShell Gallery with this key
 environment:
-  NuGetApiKey:
-    secure: HncD30pn+cWRepdP28pyB1l4BNg3x3MdvcNV8EysOhQ5kBFMHVyXiQM0whuUW78P
+  NuGetAPIKey:
+    secure: kIVhO0VcC1J/yO/KR8/er0nrwnJ3zRq+pVBHxBWIjh699HLMCeCcOI9jVap7vBpI
 
-image:
-  - Visual Studio 2017
+image: Visual Studio 2022
 install:
   - ps: Install-Module -Name InvokeBuild -Confirm:$false -ErrorAction Stop -Force
 
@@ -27,4 +26,4 @@ test_script:
 deploy: false
 
 on_finish:
-  - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'AppveyorRDPDebug') {$blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))}
+  - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'AppveyorRDPDebug') {$blockRdp = $true; iex ((New-Object Net.Webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))}

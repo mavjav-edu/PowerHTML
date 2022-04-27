@@ -1,5 +1,5 @@
 #Move out of tests to the subdirectory of the modulepwd
-if ((get-item .).Name -match 'Tests') {Set-Location $PSScriptRoot\..}
+if ((Get-Item .).Name -match 'Tests') {Set-Location $PSScriptRoot\..}
 
 $ModuleName = 'PowerHTML'
 $ModuleManifestName = "$ModuleName.psd1"

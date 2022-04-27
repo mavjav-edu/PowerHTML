@@ -1,7 +1,7 @@
 #requires -module BuildHelpers
-if (-not (import-module BuildHelpers -PassThru -verbose:$false -erroraction silentlycontinue)) {
-    install-module buildhelpers -scope currentuser -erroraction stop -force
-    import-module BuildHelpers -erroraction stop -verbose:$false
+if (-not (Import-Module BuildHelpers -PassThru -verbose:$false -erroraction silentlycontinue)) {
+    Install-Module buildhelpers -scope currentuser -erroraction stop -force
+    Import-Module BuildHelpers -erroraction stop -verbose:$false
 }
 Set-BuildEnvironment -force
 $PSVersion = $PSVersionTable.PSVersion.Major
@@ -21,9 +21,9 @@ Describe 'Powershell Module' {
                 #Copy the Module Manifest to a temp file in order to test to fix a bug where
                 #Test-ModuleManifest caches the first result, thus not catching changes
                 $TempModuleManifestPath = [System.IO.Path]::GetTempFileName() + '.psd1'
-                copy-item $ModuleManifestPath $TempModuleManifestPath
+                Copy-Item $ModuleManifestPath $TempModuleManifestPath
                 $Script:Manifest = Test-ModuleManifest $TempModuleManifestPath
-                remove-item $TempModuleManifestPath -verbose:$false
+                Remove-Item $TempModuleManifestPath -verbose:$false
             }
         }
 

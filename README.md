@@ -1,6 +1,6 @@
 # PowerHTML
-[![Build status](https://ci.appveyor.com/api/projects/status/qw79sc8cu0u0y8b8/branch/master?svg=true)](https://ci.appveyor.com/project/JustinGrote/powerhtml/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/9l6029e9g7f5687i?svg=true)](https://ci.appveyor.com/project/mavaddat/powerhtml)
 
-HTML Agility Pack implementation in Powershell for parsing and manipulating HTML
+HTML Agility Pack implementation in PowerShell for parsing and manipulating HTML
 
-Initially this project provides the ConvertFrom-HTML cmdlet, which can be used to parse HTML without requiring IE and HTML document.
+Initially this project provides the `ConvertFrom-HTML` cmdlet, which can be used to parse HTML without requiring `BasicParsing`, IE, or HTML document.
