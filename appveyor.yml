@@ -23,7 +23,8 @@ build_script:
 test_script:
   - ps: Invoke-Build Test
 
-deploy: off
+deploy_script:
+- ps: Invoke-Build Deploy
 notifications:
 - provider: Webhook
   url: ${{ secrets.WEBHOOK_URL }}
