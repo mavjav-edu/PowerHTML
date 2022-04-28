@@ -36,7 +36,7 @@ if ($AssembliesToLoad) {
     }
 
     Write-Verbose "Loading Assemblies for .NET target: $dotNetTarget"
-    Add-Type -Path $AssembliesToLoad.fullname -ErrorAction Stop
+    Add-Type -Path $AssembliesToLoad.FullName -ErrorAction Stop
 } else {
     Write-Error "No assemblies found for .NET target: $dotNetTarget"
 }
@@ -46,19 +46,19 @@ Foreach($FunctionToImport in @($PublicFunctions + $PrivateFunctions))
 {
     Try
     {
-        . $FunctionToImport.fullname
+        . $FunctionToImport.FullName
     }
     Catch
     {
-        Write-Error -Message "Failed to import function $($import.fullname): $_"
+        Write-Error -Message "Failed to import function $($import.FullName): $_"
     }
 }
 
 #Import Settings files as global objects based on their filename
 foreach ($ModuleSettingsItem in $ModuleSettings)
 {
-    New-Variable -Name "$($ModuleSettingsItem.basename)" -Scope Global -Value (ConvertFrom-Json (Get-Content -raw $ModuleSettingsItem.fullname)) -Force
+    New-Variable -Name "$($ModuleSettingsItem.BaseName)" -Scope Global -Value (ConvertFrom-Json (Get-Content -Raw $ModuleSettingsItem.FullName)) -Force
 }
 
 #Export the public functions. This requires them to match the standard Noun-Verb powershell cmdlet format as a safety mechanism
-Export-ModuleMember -Function ($PublicFunctions.Basename | where {$PSitem -match '^\w+-\w+$'})
+Export-ModuleMember -Function ($PublicFunctions.Basename | Where-Object {$PSitem -match '^\w+-\w+$'})

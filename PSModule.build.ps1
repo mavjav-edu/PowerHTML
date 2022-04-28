@@ -26,8 +26,6 @@ param (
 #Initialize Build Environment
 Enter-Build {
     #Initialize Script-scope variables
-    $ArtifactPaths = @()
-    $ProjectBuildVersion = $null
     $ProjectBuildPath = $null
 
     $lines = '----------------------------------------------------------------'
@@ -81,8 +79,6 @@ Enter-Build {
     }
 
     #Initialize helpful build environment variables
-    $Timestamp = Get-Date -UFormat '%Y%m%d-%H%M%S'
-    $PSVersion = $PSVersionTable.PSVersion.Major
     Set-BuildEnvironment -Force
 
     $PassThruParams = @{}
@@ -115,7 +111,7 @@ Enter-Build {
         Get-ChildItem env: | Out-String | Write-Verbose
 
         Write-Verboseheader 'Powershell Variables'
-        Get-Variable | Select-Object name, value, visibility | Format-Table -AutoSize | Out-String | Write-Verbose
+        Get-Variable | Select-Object Name, value, visibility | Format-Table -AutoSize | Out-String | Write-Verbose
     }
 
     #Register Nuget
@@ -248,8 +244,8 @@ task Version {
 
 
     $SCRIPT:ProjectSemVersion = $($GitVersionInfo.fullsemver)
-    Write-Build Green "Task $($task.name)`: Using Project Version: $ProjectBuildVersion"
-    Write-Build Green "Task $($task.name)`: Using Project Version (Extended): $($GitVersionInfo.fullsemver)"
+    Write-Build Green "Task $($task.Name)`: Using Project Version: $ProjectBuildVersion"
+    Write-Build Green "Task $($task.Name)`: Using Project Version (Extended): $($GitVersionInfo.fullsemver)"
 }
 
 #Copy all powershell module "artifacts" to Build Directory
@@ -259,7 +255,6 @@ task CopyFilesToBuildDir {
 
     #The file or file paths to copy, excluding the powershell psm1 and psd1 module and manifest files which will be autodetected
     #TODO: Move this somewhere higher in the hierarchy into a settings file, or rather go the "exclude" route
-    $FilesToCopy = 'lib', 'Public', 'Private', 'Types', 'LICENSE', 'README.md', "$($Env:BHProjectName).psm1", "$($Env:BHProjectName).psd1"
     Copy-Item -Recurse -Path $buildRoot\* -Exclude $BuildFilesToExclude -Destination $ProjectBuildPath @PassThruParams
 }
 
@@ -275,7 +270,7 @@ task UpdateMetadata CopyFilesToBuildDir, Version, {
     Copy-Item -Recurse $ProjectBuildPath/* $tempModuleDir
 
     $TempModuleManifest = ($tempModuleDir + '\' + (Split-Path $env:BHPSModuleManifest -Leaf))
-    Set-ModuleFunctions $tempModuleManifest @PassThruParams
+    Set-ModuleFunction $tempModuleManifest @PassThruParams
     $moduleFunctionsToExport = Get-Metadata -Path $tempModuleManifest -PropertyName FunctionsToExport
     Update-Metadata -Path $ProjectBuildManifest -PropertyName FunctionsToExport -Value $moduleFunctionsToExport
 
@@ -285,7 +280,7 @@ task UpdateMetadata CopyFilesToBuildDir, Version, {
     # Are we in the master or develop/development branch? Bump the version based on the powershell gallery if so, otherwise add a build tag
     if ($BranchName -match '^(master|dev(elop)?(ment)?)$')
     {
-        Write-Build Green "Task $($task.name)`: In Master/Develop branch, adding Tag Version $ProjectBuildVersion to this build"
+        Write-Build Green "Task $($task.Name)`: In Master/Develop branch, adding Tag Version $ProjectBuildVersion to this build"
         $Script:ProjectVersion = $ProjectBuildVersion
         if (-not (git tag -l $ProjectBuildVersion))
         {
@@ -308,7 +303,7 @@ task UpdateMetadata CopyFilesToBuildDir, Version, {
     }
     else
     {
-        Write-Build Green "Task $($task.name)`: Not in Master/Develop branch, marking this as a feature prelease build"
+        Write-Build Green "Task $($task.Name)`: Not in Master/Develop branch, marking this as a feature prelease build"
         $Script:ProjectVersion = $ProjectSemVersion
         #Set an email address for tag commit to work if it isn't already present
         if (-not (git config user.email))
@@ -363,7 +358,7 @@ task Pester {
     }
 
     #If we are in vscode, add the VSCodeMarkers
-    if ($host.name -match 'Visual Studio Code')
+    if ($host.Name -match 'Visual Studio Code')
     {
         Write-Verbose 'Detected Visual Studio Code, adding test markers'
         $PesterParams.PesterOption = (New-PesterOption -IncludeVSCodeMarker)
@@ -394,7 +389,7 @@ task Pester {
 task Package Version, {
 
     $ZipArchivePath = (Join-Path $env:BHBuildOutput "$env:BHProjectName-$ProjectBuildVersion.zip")
-    Write-Build green "Task $($task.name)`: Writing Finished Module to $ZipArchivePath"
+    Write-Build green "Task $($task.Name)`: Writing Finished Module to $ZipArchivePath"
     #Package the Powershell Module
     Compress-Archive -Path $ProjectBuildPath -DestinationPath $ZipArchivePath -Force @PassThruParams
 
@@ -402,7 +397,7 @@ task Package Version, {
     #If we are in Appveyor, push completed zip to Appveyor Artifact
     if ($env:APPVEYOR)
     {
-        Write-Build Green "Task $($task.name)`: Detected Appveyor, pushing Powershell Module archive to Artifacts"
+        Write-Build Green "Task $($task.Name)`: Detected Appveyor, pushing Powershell Module archive to Artifacts"
         Push-AppveyorArtifact $ZipArchivePath
     }
 }
@@ -430,13 +425,13 @@ task PreDeploymentChecks {
         $ErrorActionPreference = $CurrentErrorActionPreference
     }
 
-    if (($env:BHBranchName -eq 'master') -or $ForceDeploy)
+    if ($ForceDeploy -or ($env:BHBranchName -eq 'master'))
     {
         if (-not (Get-Item $ProjectBuildPath/*.psd1 -ErrorAction silentlycontinue)) { throw "No Powershell Module Found in $ProjectBuildPath. Skipping deployment. Did you remember to build it first with {Invoke-Build Build}?" }
     }
     else
     {
-        Write-Build Magenta "Task $($task.name)`: We are not in master branch, skipping publish. If you wish to deploy anyways such as for testing, run {InvokeBuild Deploy -ForceDeploy:$true}"
+        Write-Build Magenta "Task $($task.Name)`: We are not in master branch, skipping publish. If you wish to deploy anyways such as for testing, run {InvokeBuild Deploy -ForceDeploy:$true}"
         $script:SkipPublish = $true
     }
 }
@@ -461,7 +456,7 @@ task PublishGitHubRelease -if (-not $SkipPublish) Package, {
     }
     if ($SkipGitHubRelease)
     {
-        Write-Build Magenta "Task $($task.name): Skipping Publish to GitHub Releases"
+        Write-Build Magenta "Task $($task.Name): Skipping Publish to GitHub Releases"
     }
     else
     {
@@ -513,13 +508,11 @@ task PublishPSGallery -if (-not $SkipPublish) {
     if ($AppVeyor -and -not $NuGetAPIKey)
     {
         Write-Build DarkYellow "Couldn't find NuGetAPIKey in the Appveyor secure environment variables. Did you save your NuGet/Powershell Gallery API key as an Appveyor Secure Variable? Https://Docs.Microsoft.Com/En-Us/Powershell/Gallery/Psgallery/Creating-And-Publishing-An-item and Https://Www.Appveyor.Com/Docs/Build-Configuration/"
-        $SkipPSGallery = $true
     }
     if (-not $NuGetAPIKey)
     {
         #TODO: Add Windows Credential Store support and some kind of Linux secure storage or caching option
         Write-Build DarkYellow '$env:NuGetAPIKey was not found as an environment variable. Please specify it or use {Invoke-Build Deploy -NuGetAPIKey "MyAPIKeyString"}. Have you registered for a Powershell Gallery API key yet? Https://Docs.Microsoft.Com/En-Us/Powershell/Scripting/Gallery/How-To/Publishing-Packages/publishing-a-package?view=powershell-7.2'
-        $SkipPSGallery = $true
     }
 
     if ($SkipPublish)

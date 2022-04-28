@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Takes an HTML input and converts it to an HTMLAgilityPack htmlNode object that can be navigated using Linq
 .DESCRIPTION

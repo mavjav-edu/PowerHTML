@@ -4,7 +4,6 @@ if (-not (Import-Module BuildHelpers -PassThru -verbose:$false -erroraction sile
     Import-Module BuildHelpers -erroraction stop -verbose:$false
 }
 Set-BuildEnvironment -force
-$PSVersion = $PSVersionTable.PSVersion.Major
 $BuildOutputProject = Join-Path $env:BHBuildOutput $env:BHProjectName
 $ModuleManifestPath = Join-Path $BuildOutputProject '\*.psd1'
 
@@ -44,8 +43,8 @@ Describe 'Powershell Module' {
         }
 
         It 'Exports all public functions' {
-            $FunctionFiles = Get-ChildItem "$BuildOutputProject\Public" -Filter *.ps1 | Select -ExpandProperty BaseName
-            $FunctionNames = $FunctionFiles | foreach {$_ -replace '-', "-$($Manifest.Prefix)"}
+            $FunctionFiles = Get-ChildItem "$BuildOutputProject\Public" -Filter *.ps1 | Select-Object -ExpandProperty BaseName
+            $FunctionNames = $FunctionFiles | ForEach-Object {$_ -replace '-', "-$($Manifest.Prefix)"}
             $ExFunctions = $Manifest.ExportedFunctions.Values.Name
             foreach ($FunctionName in $FunctionNames)
             {
@@ -70,7 +69,7 @@ Describe 'Powershell Module' {
 }
 
 Describe 'PSScriptAnalyzer' {
-    $results = Invoke-ScriptAnalyzer -Path $BuildOutputProject -Recurse -ExcludeRule "PSAvoidUsingCmdletAliases","PSAvoidGlobalVars" -Verbose:$false
+    $results = Invoke-ScriptAnalyzer -Path $BuildOutputProject -Recurse -ExcludeRule "PSAvoidUsingCmdletAliases","PSAvoidGlobalVars","PSReviewUnusedParameter" -Verbose:$false
     It 'PSScriptAnalyzer returns zero errors for all files in the repository' {
         $results
         $results.Count | Should Be 0
