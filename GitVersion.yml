@@ -1,3 +1,23 @@
-﻿next-version: 0.0.1
-mode: ContinuousDeployment
+next-version: 1.0.0
+commit-message-incrementing: Enabled
+ignore:
+  sha: []
+  commits-before: 2022-04-26T00:00:00.0000000
+increment: Inherit
+mode: ContinuousDelivery
+major-version-bump-message: '\+semver:\s?(breaking|major)'
+commits-since-version-source-padding: 4
+build-metadata-padding: 4
+assembly-versioning-scheme: MajorMinorPatch
+update-build-number: true
+legacy-semver-padding: 4
+continuous-delivery-fallback-tag: ci
+minor-version-bump-message: '\+semver:\s?(feature|minor)'
+merge-message-formats: {}
+tag-prefix: '[vV]'
+tag-pre-release-weight: 60000
+assembly-informational-format: '{InformationalVersion}'
+assembly-file-versioning-scheme: MajorMinorPatch
+no-bump-message: '\+semver:\s?(none|skip)'
+patch-version-bump-message: '\+semver:\s?(fix|patch)'
 

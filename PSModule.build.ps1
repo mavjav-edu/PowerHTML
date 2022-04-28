@@ -83,7 +83,7 @@ Enter-Build {
     #Initialize helpful build environment variables
     $Timestamp = Get-Date -UFormat '%Y%m%d-%H%M%S'
     $PSVersion = $PSVersionTable.PSVersion.Major
-    Set-BuildEnvironment -force
+    Set-BuildEnvironment -Force
 
     $PassThruParams = @{}
 
@@ -127,7 +127,7 @@ Enter-Build {
         Get-PackageProvider Nuget @PassThruParams | Format-List | Out-String | Write-Verbose
     }
 
-    #Fix a bug with the Appveyor 2017 image having a broken nuget (points to v3 URL but installed packagemanagement doesn't query v3 correctly)
+    #A bug with the Appveyor 2017 image having a broken nuget (points to v3 URL but installed packagemanagement doesn't query v3 correctly)
     #Next command will add this back
     if ($ENV:APPVEYOR -and ($ENV:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2017'))
     {
@@ -191,7 +191,7 @@ task Version {
         #Fetch GitVersion
         $GitVersionCMDPackage = Install-Package $GitVersionCMDPackageName -Scope currentuser -Source 'nuget.org' -Force @PassThruParams
     }
-    $GitVersionEXE = ((Get-Package $GitVersionCMDPackageName).source | Split-Path -Parent) + '\tools\GitVersion.exe'
+    $GitVersionEXE = (Get-Package $GitVersionCMDPackageName).source | Split-Path -Parent -Resolve | ForEach-Object { Resolve-Path "$_\*\*.exe" } | Select-Object -First 1
 
     #Does this project have a module manifest? Use that as the Gitversion starting point (will use this by default unless project is tagged higher)
     #Uses Powershell-YAML module to read/write the GitVersion.yaml config file
@@ -204,18 +204,20 @@ task Version {
             $GitVersionConfigYAML = [ordered]@{}
             #ConvertFrom-YAML returns as individual Key-Value hashtables, we need to combine them into a single hashtable
             (Get-Content $GitVersionConfig | ConvertFrom-Yaml) | ForEach-Object { $GitVersionConfigYAML += $PSItem }
-            $GitVersionConfigYAML.'Next-Version' = $ModuleManifestVersion.ToString()
-            $GitVersionConfigYAML | ConvertTo-Yaml | Out-File $GitVersionConfig
+            if ($GitVersionConfigYAML.'next-version' -ne $ModuleManifestVersion.ToString())
+            {
+                $GitVersionConfigYAML.'next-version' = $ModuleManifestVersion.ToString()
+                $GitVersionConfigYAML | ConvertTo-Yaml | Out-File $GitVersionConfig
+            }
         }
         else
         {
-            @{'Next-Version' = $ModuleManifestVersion.toString() } | ConvertTo-Yaml | Out-File $GitVersionConfig
+            @{'next-version' = $ModuleManifestVersion.toString() } | ConvertTo-Yaml | Out-File $GitVersionConfig
         }
     }
 
     #Calcuate the GitVersion
     Write-Verbose 'Executing GitVersion to determine version info'
-    $GitVersionCommand = "$GitVersionEXE $buildRoot"
     $GitVersionOutput = Invoke-BuildExec { & $GitVersionEXE $buildRoot }
 
     #Since GitVersion doesn't return error exit codes, we look for error text in the output in the output
@@ -274,7 +276,7 @@ task UpdateMetadata CopyFilesToBuildDir, Version, {
 
     $TempModuleManifest = ($tempModuleDir + '\' + (Split-Path $env:BHPSModuleManifest -Leaf))
     Set-ModuleFunctions $tempModuleManifest @PassThruParams
-    $moduleFunctionsToExport = Get-MetaData -Path $tempModuleManifest -PropertyName FunctionsToExport
+    $moduleFunctionsToExport = Get-Metadata -Path $tempModuleManifest -PropertyName FunctionsToExport
     Update-Metadata -Path $ProjectBuildManifest -PropertyName FunctionsToExport -Value $moduleFunctionsToExport
 
     # Set the Module Version to the calculated Project Build version

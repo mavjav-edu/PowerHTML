@@ -12,7 +12,7 @@
 RootModule = 'PowerHTML.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.1'
+ModuleVersion = '1.0.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -24,7 +24,7 @@ GUID = 'a1aae0af-a5a5-4d57-a503-03817cdf05da'
 Author = 'Mavaddat Javid'
 
 # Company or vendor of this module
-CompanyName = 'Unspecified'
+CompanyName = 'Mav Jav Education'
 
 # Copyright statement for this module
 Copyright = '(c) 2023 Mavaddat Javid. All rights reserved.'
