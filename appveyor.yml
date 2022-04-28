@@ -4,7 +4,7 @@ version: '{build}-{branch}'
 #Publish to PowerShell Gallery with this key
 environment:
   NuGetAPIKey:
-    secure: kIVhO0VcC1J/yO/KR8/er0nrwnJ3zRq+pVBHxBWIjh699HLMCeCcOI9jVap7vBpI
+    secure: +JR28PO1kbiIr81CqjFuhMhBWYRoFqUZqsTjAD3fWkwWcdRiyz5Utk3t0o4Lhw1G
 
 image: Visual Studio 2022
 install:
@@ -23,7 +23,42 @@ build_script:
 test_script:
   - ps: Invoke-Build Test
 
-deploy: false
-
+deploy: off
+notifications:
+- provider: Webhook
+  url: ${{ secrets.WEBHOOK_URL }}
+  method: POST
+  body: >-
+    {
+        "title": "AppVeyor Build {{#passed}}passed{{/passed}}{{#failed}}failed{{/failed}}",
+        "summary": "Build {{projectName}} {{buildVersion}} {{status}}",
+        "themeColor": "{{#passed}}00FF00{{/passed}}{{#failed}}FF0000{{/failed}}",
+        "sections": [
+            {
+                "activityTitle": "{{commitAuthor}} on {{commitDate}} ( {{repositoryProvider}}/{{repositoryName}} )",
+                "activityText": "[Build {{projectName}} {{buildVersion}} {{status}}]({{buildUrl}})"
+            },
+            {
+                "title": "Details",
+                "facts": [
+                    {
+                        "name": "Commit",
+                        "value": "[{{commitId}} by {{commitAuthor}} on {{branch}} at {{commitDate}}]({{commitUrl}})"
+                    },
+                    {
+                        "name": "Message",
+                        "value": "{{commitMessage}}"
+                    },
+                    {
+                        "name": "Duration",
+                        "value": "{{duration}} ({{started}} - {{finished}})"
+                    }
+                ]
+            }
+        ]
+    }
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: true
 on_finish:
   - ps: if ($env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'AppveyorRDPDebug') {$blockRdp = $true; iex ((New-Object Net.Webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))}
