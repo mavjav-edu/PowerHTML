@@ -25,7 +25,6 @@ build_script:
   - ps: Invoke-Build Build,Package
 test_script:
   - ps: Invoke-Build Test
-
 deploy_script:
 - ps: Invoke-Build Deploy
 notifications:
