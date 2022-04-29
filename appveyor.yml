@@ -7,7 +7,7 @@ environment:
     secure: +JR28PO1kbiIr81CqjFuhMhBWYRoFqUZqsTjAD3fWkwWcdRiyz5Utk3t0o4Lhw1G
   GitHubAPIKey:
     secure: AsYkTbn6yg65ajcH/zie+jXylxvv8eaqe6dlK0262Bgi3SApjuzOJmhg1DwBy9xh
-  GitHubUserName: mavaddat
+  GitHubUserName: mavjav-edu
 
 image: Visual Studio 2022
 install:
