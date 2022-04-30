@@ -170,6 +170,24 @@ task Clean {
 
 }
 
+task HTMLAgilityPack {
+    # This task is used to download the HTML Agility Pack from NuGet
+    # The archive is extracted into ./lib
+
+    # Check if the HTML Agility Pack is already installed
+    if (!(Get-Package HTMLAgilityPack -ForceBootstrap -ErrorAction SilentlyContinue))
+    {
+        Write-Verbose 'Installing HTML Agility Pack'
+        Install-Package HTMLAgilityPack -ForceBootstrap -Scope CurrentUser @PassThruParams | Out-String | Write-Verbose
+    }
+    else
+    {
+        Write-Verbose 'HTML Agility Pack already installed'
+    }
+    Get-Package HTMLAgilityPack | Select-Object -ExpandProperty Source | Split-Path -Parent | Get-ChildItem -Directory -Depth 2 | Where-Object -FilterScript {Get-ChildItem -Path $_ -Filter *.dll -File -Recurse} | ForEach-Object { Copy-Item $_ -Destination $env:BHBuildOutput -Container -Verbose:$VerbosePreference }
+
+}
+
 task Version {
     #This task determines what version number to assign this build
     $GitVersionConfig = "$buildRoot/GitVersion.yml"
